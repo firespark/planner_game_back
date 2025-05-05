@@ -1,6 +1,6 @@
 <?php
 
-function route($uri, $method, $taskController, $slotController)
+function route($uri, $method, $taskController, $slotController, $settingController)
 {
     switch (true) {
         // --- Tasks ---
@@ -15,7 +15,7 @@ function route($uri, $method, $taskController, $slotController)
             break;
 
         case preg_match('#^/api/tasks/(\d+)$#', $uri, $matches) && $method === 'GET':
-            $slotId = (int)$matches[1];
+            $slotId = (int) $matches[1];
             $taskController->getTasks($slotId);
             break;
 
@@ -27,6 +27,16 @@ function route($uri, $method, $taskController, $slotController)
         case $uri === '/api/slots/create' && $method === 'POST':
             $data = json_decode(file_get_contents('php://input'), true);
             $slotController->create($data);
+            break;
+
+        // --- Settings ---
+        case $uri === '/api/settings' && $method === 'GET':
+            $settingController->get();
+            break;
+
+        case $uri === '/api/settings/update' && $method === 'POST':
+            $data = json_decode(file_get_contents('php://input'), true);
+            $settingController->update($data);
             break;
 
         // --- Default ---
