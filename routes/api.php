@@ -2,7 +2,6 @@
 
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../controllers/TaskController.php';
-require_once __DIR__ . '/../controllers/SlotController.php';
 require_once __DIR__ . '/../controllers/SettingController.php';
 require_once __DIR__ . '/../controllers/ArchiveController.php';
 
@@ -13,7 +12,6 @@ function route()
     $method = $_SERVER['REQUEST_METHOD'];
 
     $taskController = new TaskController($db);
-    $slotController = new SlotController($db);
     $settingController = new SettingController($db);
     $archiveController = new ArchiveController($db);
 
@@ -32,16 +30,6 @@ function route()
         case preg_match('#^/api/tasks/(\d+)$#', $uri, $matches) && $method === 'GET':
             $slotId = (int) $matches[1];
             $taskController->getBySlot($slotId);
-            break;
-
-        // --- Slots ---
-        case $uri === '/api/slots' && $method === 'GET':
-            $slotController->index();
-            break;
-
-        case $uri === '/api/slots/create' && $method === 'POST':
-            $data = json_decode(file_get_contents('php://input'), true);
-            $slotController->create($data);
             break;
 
         // --- Archive ---
