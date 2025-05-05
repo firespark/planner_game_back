@@ -3,7 +3,6 @@
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../controllers/TaskController.php';
 require_once __DIR__ . '/../controllers/SettingController.php';
-require_once __DIR__ . '/../controllers/ArchiveController.php';
 
 function route()
 {
@@ -13,10 +12,14 @@ function route()
 
     $taskController = new TaskController($db);
     $settingController = new SettingController($db);
-    $archiveController = new ArchiveController($db);
 
     switch (true) {
         // --- Tasks ---
+        case $uri === '/api/tasks/range' && $method === 'POST':
+            $data = json_decode(file_get_contents('php://input'), true);
+            $taskController->getForRange($data);
+            break;
+
         case $uri === '/api/tasks/create' && $method === 'POST':
             $data = json_decode(file_get_contents('php://input'), true);
             $taskController->create($data);
@@ -27,24 +30,18 @@ function route()
             $taskController->markDone($data['id']);
             break;
 
-        case preg_match('#^/api/tasks/(\d+)$#', $uri, $matches) && $method === 'GET':
-            $slotId = (int) $matches[1];
-            $taskController->getBySlot($slotId);
+        case $uri === '/api/tasks/undone' && $method === 'POST':
+            $data = json_decode(file_get_contents('php://input'), true);
+            $taskController->markUndone($data['id']);
             break;
 
-        // --- Archive ---
-        case $uri === '/api/archive' && $method === 'GET':
-            $archiveController->get();
+        case $uri === '/api/tasks/decay' && $method === 'POST':
+            $taskController->decayUnfinished();
             break;
 
-        case preg_match('#^/api/archive/task/(\d+)$#', $uri, $matches) && $method === 'GET':
-            $taskId = (int) $matches[1];
-            $archiveController->getByTaskId($taskId);
-            break;
-
-        case preg_match('#^/api/archive/(\d+)$#', $uri, $matches) && $method === 'DELETE':
-            $archiveId = (int) $matches[1];
-            $archiveController->delete($archiveId);
+        case $uri === '/api/tasks/archive' && $method === 'POST':
+            $data = json_decode(file_get_contents('php://input'), true);
+            $taskController->archiveTasks();
             break;
 
         // --- Settings ---

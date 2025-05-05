@@ -11,56 +11,47 @@ class Task
         $this->conn = $db;
     }
 
-    public function getBySlot($slotId)
-    {
-        $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE slot_id = :slot_id AND archived = 0");
-        $stmt->bindParam(':slot_id', $slotId);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-
     public function create($data)
     {
-        $stmt = $this->conn->prepare("INSERT INTO {$this->table} (slot_id, title, points, done, archived, created_at)
-            VALUES (:slot_id, :title, :points, 0, 0, NOW())");
+        $stmt = $this->conn->prepare("INSERT INTO {$this->table} (date, title, start_points, current_points, done, archived, created_at) VALUES (:date, :title, :points, 0, 0, NOW())");
         $stmt->execute([
-            ':slot_id' => $data['slot_id'],
+            ':date' => $data['date'],
             ':title' => $data['title'],
-            ':points' => $data['points']
+            ':start_points' => $data['points'],
+            ':current_points' => $data['points']
         ]);
         return $this->conn->lastInsertId();
     }
 
-    public function markDone($taskId)
+    public function getForRange($start, $end)
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE date BETWEEN :start AND :end AND archived = 0");
+        $stmt->execute([':start' => $start, ':end' => $end]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function markDone($id)
     {
         $stmt = $this->conn->prepare("UPDATE {$this->table} SET done = 1 WHERE id = :id");
-        $stmt->bindParam(':id', $taskId);
-        return $stmt->execute();
+        $stmt->execute([':id' => $id]);
     }
 
-    public function archive($taskId)
+    public function markUndone($id)
     {
-        $task = $this->getById($taskId);
-        if (!$task)
-            return false;
-
-        $stmt = $this->conn->prepare("INSERT INTO archive (task_id, completed_at, points_earned)
-            VALUES (:task_id, NOW(), :points)");
-        $stmt->execute([
-            ':task_id' => $taskId,
-            ':points' => $task['points']
-        ]);
-
-        $stmt = $this->conn->prepare("UPDATE {$this->table} SET archived = 1 WHERE id = :id");
-        $stmt->bindParam(':id', $taskId);
-        return $stmt->execute();
+        $stmt = $this->conn->prepare("UPDATE {$this->table} SET done = 0 WHERE id = :id");
+        $stmt->execute([':id' => $id]);
     }
 
-    public function getById($id)
+    public function decayUnfinishedTasks($date)
     {
-        $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE id = :id");
-        $stmt->bindParam(':id', $id);
+        $stmt = $this->conn->prepare("UPDATE {$this->table} SET date = :today, current_points = ROUND(start_points * 0.9, 2) WHERE date < :today AND done = 0 AND archived = 0");
+        $stmt->execute([':today' => $date]);
+    }
+
+    public function archiveTasks()
+    {
+        $stmt = $this->conn->prepare("UPDATE {$this->table} SET archived = 1 WHERE date < :today AND archived = 0");
         $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }
+
