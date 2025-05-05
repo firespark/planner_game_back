@@ -35,11 +35,11 @@ function route()
             $taskController->markUndone($data['id']);
             break;
 
-        case $uri === '/api/tasks/decay' && $method === 'POST':
+        case $uri === '/api/tasks/decay' && $method === 'GET':
             $taskController->decayUnfinished();
             break;
 
-        case $uri === '/api/tasks/archive' && $method === 'POST':
+        case $uri === '/api/tasks/archive' && $method === 'GET':
             $data = json_decode(file_get_contents('php://input'), true);
             $taskController->archiveTasks();
             break;
