@@ -31,7 +31,7 @@ function route()
 
         case preg_match('#^/api/tasks/(\d+)$#', $uri, $matches) && $method === 'GET':
             $slotId = (int) $matches[1];
-            $taskController->getTasks($slotId);
+            $taskController->getBySlot($slotId);
             break;
 
         // --- Slots ---
@@ -46,7 +46,7 @@ function route()
 
         // --- Archive ---
         case $uri === '/api/archive' && $method === 'GET':
-            $archiveController->getAll();
+            $archiveController->get();
             break;
 
         case preg_match('#^/api/archive/task/(\d+)$#', $uri, $matches) && $method === 'GET':

@@ -11,7 +11,7 @@ class ArchiveController
         $this->archive = new Archive($db);
     }
 
-    public function getAll()
+    public function get()
     {
         $archives = $this->archive->getAll();
         Response::json($archives);

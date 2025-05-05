@@ -24,7 +24,7 @@ class TaskController
         Response::json(['success' => true]);
     }
 
-    public function getTasks($slotId)
+    public function getBySlot($slotId)
     {
         $tasks = $this->task->getBySlot($slotId);
         Response::json($tasks);
