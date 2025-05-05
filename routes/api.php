@@ -1,7 +1,22 @@
 <?php
 
-function route($uri, $method, $taskController, $slotController, $settingController)
+require_once __DIR__ . '/../config/Database.php';
+require_once __DIR__ . '/../controllers/TaskController.php';
+require_once __DIR__ . '/../controllers/SlotController.php';
+require_once __DIR__ . '/../controllers/SettingController.php';
+require_once __DIR__ . '/../controllers/ArchiveController.php';
+
+function route()
 {
+    $db = (new Database())->connect();
+    $uri = $_SERVER['REQUEST_URI'];
+    $method = $_SERVER['REQUEST_METHOD'];
+
+    $taskController = new TaskController($db);
+    $slotController = new SlotController($db);
+    $settingController = new SettingController($db);
+    $archiveController = new ArchiveController($db);
+
     switch (true) {
         // --- Tasks ---
         case $uri === '/api/tasks/create' && $method === 'POST':
@@ -27,6 +42,21 @@ function route($uri, $method, $taskController, $slotController, $settingControll
         case $uri === '/api/slots/create' && $method === 'POST':
             $data = json_decode(file_get_contents('php://input'), true);
             $slotController->create($data);
+            break;
+
+        // --- Archive ---
+        case $uri === '/api/archive' && $method === 'GET':
+            $archiveController->getAll();
+            break;
+
+        case preg_match('#^/api/archive/task/(\d+)$#', $uri, $matches) && $method === 'GET':
+            $taskId = (int) $matches[1];
+            $archiveController->getByTaskId($taskId);
+            break;
+
+        case preg_match('#^/api/archive/(\d+)$#', $uri, $matches) && $method === 'DELETE':
+            $archiveId = (int) $matches[1];
+            $archiveController->delete($archiveId);
             break;
 
         // --- Settings ---
