@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/Database.php';
+require_once __DIR__ . '/Project.php';
 
 class Task
 {
@@ -13,13 +14,18 @@ class Task
 
     public function create($data)
     {
-        $stmt = $this->conn->prepare("INSERT INTO {$this->table} (date, title, start_points, current_points, done, archived, created_at) VALUES (:date, :title, :points, 0, 0, NOW())");
+        $stmt = $this->conn->prepare("INSERT INTO {$this->table} (date, title, start_points, current_points, done, archived, created_at) VALUES (:date, :title, :start_points, :start_points, 0, 0, NOW())");
+
         $stmt->execute([
             ':date' => $data['date'],
             ':title' => $data['title'],
-            ':start_points' => $data['points'],
-            ':current_points' => $data['points']
+            ':start_points' => $data['points']
         ]);
+
+
+        $project = new Project($this->conn);
+        $project->addPoints($data['points']);
+
         return $this->conn->lastInsertId();
     }
 

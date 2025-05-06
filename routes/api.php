@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../controllers/TaskController.php';
-require_once __DIR__ . '/../controllers/SettingController.php';
+require_once __DIR__ . '/../controllers/ProjectController.php';
 
 function route()
 {
@@ -11,7 +11,7 @@ function route()
     $method = $_SERVER['REQUEST_METHOD'];
 
     $taskController = new TaskController($db);
-    $settingController = new SettingController($db);
+    $projectController = new ProjectController($db);
 
     switch (true) {
         // --- Tasks ---
@@ -44,14 +44,27 @@ function route()
             $taskController->archiveTasks();
             break;
 
-        // --- Settings ---
-        case $uri === '/api/settings' && $method === 'GET':
-            $settingController->get();
+        // --- Projects ---
+        case $uri === '/api/project' && $method === 'GET':
+            $projectController->get();
             break;
 
-        case $uri === '/api/settings/update' && $method === 'POST':
+        case $uri === '/api/project/create' && $method === 'POST':
             $data = json_decode(file_get_contents('php://input'), true);
-            $settingController->update($data);
+            $projectController->create($data);
+            break;
+
+        case $uri === '/api/project/update' && $method === 'POST':
+            $data = json_decode(file_get_contents('php://input'), true);
+            $projectController->update($data);
+            break;
+
+        case $uri === '/api/project/date-range' && $method === 'GET':
+            $projectController->dateRange();
+            break;
+
+        case $uri === '/api/project/dates' && $method === 'GET':
+            $projectController->segmentDates();
             break;
 
         // --- Default ---
