@@ -18,9 +18,43 @@ class ProjectController
 
     public function create($data)
     {
-        $this->model->create($data);
-        Response::json(['success' => true]);
+        $errors = [];
+
+        $required = ['title', 'start_date', 'segment_length', 'total_segments', 'minimum_percentage'];
+        foreach ($required as $field) {
+            if (!isset($data[$field]) || $data[$field] === '' || $data[$field] === null) {
+                $errors[] = "Field '$field' is required.";
+            }
+        }
+
+        if (isset($data['segment_length']) && (!is_numeric($data['segment_length']) || $data['segment_length'] < 1 || $data['segment_length'] > 14)) {
+            $errors[] = 'Segment length must be from 1 to 14.';
+        }
+
+        if (isset($data['total_segments']) && (!is_numeric($data['total_segments']) || $data['total_segments'] < 1 || $data['total_segments'] > 24)) {
+            $errors[] = 'Total segments must be from 1 to 24.';
+        }
+
+        if (isset($data['minimum_percentage']) && (!is_numeric($data['minimum_percentage']) || $data['minimum_percentage'] < 1 || $data['minimum_percentage'] > 100)) {
+            $errors[] = 'Minimum percentage must be from 1 to 100.';
+        }
+
+        if (!empty($errors)) {
+            Response::json([
+                'success' => false,
+                'error' => join(", ", $errors)
+            ], 400);
+            return;
+        }
+
+        $result = $this->model->create($data);
+
+        Response::json([
+            'success' => $result,
+            'error' => $result ? null : 'Failed to create the project.'
+        ], $result ? 200 : 500);
     }
+
 
     public function update($data)
     {

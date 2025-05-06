@@ -45,25 +45,25 @@ function route()
             break;
 
         // --- Projects ---
-        case $uri === '/api/project' && $method === 'GET':
+        case $uri === '/api/projects' && $method === 'GET':
             $projectController->get();
             break;
 
-        case $uri === '/api/project/create' && $method === 'POST':
+        case $uri === '/api/projects/create' && $method === 'POST':
             $data = json_decode(file_get_contents('php://input'), true);
             $projectController->create($data);
             break;
 
-        case $uri === '/api/project/update' && $method === 'POST':
+        case $uri === '/api/projects/update' && $method === 'POST':
             $data = json_decode(file_get_contents('php://input'), true);
             $projectController->update($data);
             break;
 
-        case $uri === '/api/project/date-range' && $method === 'GET':
+        case $uri === '/api/projects/date-range' && $method === 'GET':
             $projectController->dateRange();
             break;
 
-        case $uri === '/api/project/dates' && $method === 'GET':
+        case $uri === '/api/projects/dates' && $method === 'GET':
             $projectController->segmentDates();
             break;
 
