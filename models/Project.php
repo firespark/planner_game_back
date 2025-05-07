@@ -26,13 +26,15 @@ class Project
             (:title, :start_date, :segment_length, :total_segments, :minimum_percentage, 0)
     ");
 
-        return $stmt->execute([
+        $success = $stmt->execute([
             ':title' => $data['title'],
             ':start_date' => $data['start_date'],
             ':segment_length' => $data['segment_length'],
             ':total_segments' => $data['total_segments'],
             ':minimum_percentage' => $data['minimum_percentage']
         ]);
+
+        return $success ? $this->conn->lastInsertId() : false;
     }
 
     public function update($data)

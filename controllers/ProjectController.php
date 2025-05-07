@@ -49,10 +49,17 @@ class ProjectController
 
         $result = $this->model->create($data);
 
-        Response::json([
-            'success' => $result,
-            'error' => $result ? null : 'Failed to create the project.'
-        ], $result ? 200 : 500);
+        if ($result) {
+            Response::json([
+                'success' => true,
+                'project_id' => $result
+            ]);
+        } else {
+            Response::json([
+                'success' => false,
+                'error' => 'Failed to create the project.'
+            ], 500);
+        }
     }
 
 
