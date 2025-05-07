@@ -63,8 +63,8 @@ function route()
             $projectController->dateRange();
             break;
 
-        case $uri === '/api/projects/dates' && $method === 'GET':
-            $projectController->segmentDates();
+        case preg_match('#^/api/projects/(\d+)/dates$#', $uri, $matches) && $method === 'GET':
+            $projectController->segmentDates((int) $matches[1]);
             break;
 
         // --- Default ---

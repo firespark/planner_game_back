@@ -77,9 +77,11 @@ class Project
         ];
     }
 
-    public function getSegmentDates()
+    public function getSegmentDates($projectId)
     {
-        $project = $this->get();
+        $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE id = :id");
+        $stmt->execute([':id' => $projectId]);
+        $project = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$project) {
             return [];
         }
@@ -97,6 +99,26 @@ class Project
         while ($current <= $endDate) {
             $dates[] = $current->format('Y-m-d');
             $current->modify('+' . $project['segment_length'] . ' days');
+        }
+
+        return $dates;
+    }
+
+    public function getDatesInSegment($segmentNumber)
+    {
+        $project = $this->get();
+        if (!$project || $segmentNumber < 1 || $segmentNumber > $project['total_segments']) {
+            return [];
+        }
+
+        $segmentLength = (int) $project['segment_length'];
+        $startDate = new DateTime($project['start_date']);
+        $startDate->modify('+' . ($segmentNumber - 1) * $segmentLength . ' days');
+
+        $dates = [];
+        for ($i = 0; $i < $segmentLength; $i++) {
+            $dates[] = $startDate->format('Y-m-d');
+            $startDate->modify('+1 day');
         }
 
         return $dates;

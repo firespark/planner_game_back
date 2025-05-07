@@ -74,8 +74,35 @@ class ProjectController
         Response::json($this->model->getVisibleDateRange());
     }
 
-    public function segmentDates()
+    public function segmentDates($projectId)
     {
-        Response::json($this->model->getSegmentDates());
+        Response::json($this->model->getSegmentDates($projectId));
+    }
+
+    public function segmentDetails($segmentNumber)
+    {
+        if (!is_numeric($segmentNumber) || $segmentNumber < 1) {
+            Response::json([
+                'success' => false,
+                'error' => 'Invalid segment number'
+            ], 400);
+            return;
+        }
+
+        $dates = $this->model->getDatesInSegment((int) $segmentNumber);
+
+        if (empty($dates)) {
+            Response::json([
+                'success' => false,
+                'error' => 'Segment not found or no dates'
+            ], 404);
+            return;
+        }
+
+        Response::json([
+            'success' => true,
+            'segment' => $segmentNumber,
+            'dates' => $dates
+        ]);
     }
 }
