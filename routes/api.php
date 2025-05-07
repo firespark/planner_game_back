@@ -7,13 +7,36 @@ require_once __DIR__ . '/../controllers/ProjectController.php';
 function route()
 {
     $db = (new Database())->connect();
-    $uri = $_SERVER['REQUEST_URI'];
+    $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     $method = $_SERVER['REQUEST_METHOD'];
 
     $taskController = new TaskController($db);
     $projectController = new ProjectController($db);
 
     switch (true) {
+        // --- Projects ---
+        case $uri === '/api/projects' && $method === 'GET':
+            $projectController->get();
+            break;
+
+        case $uri === '/api/projects/create' && $method === 'POST':
+            $data = json_decode(file_get_contents('php://input'), true);
+            $projectController->create($data);
+            break;
+
+        case $uri === '/api/projects/update' && $method === 'POST':
+            $data = json_decode(file_get_contents('php://input'), true);
+            $projectController->update($data);
+            break;
+
+        case $uri === '/api/projects/date-range' && $method === 'GET':
+            $projectController->dateRange();
+            break;
+
+        case preg_match('#^/api/projects/(\d+)/dates$#', $uri, $matches) && $method === 'GET':
+            $projectController->segmentDates((int) $matches[1]);
+            break;
+
         // --- Tasks ---
         case $uri === '/api/tasks/range' && $method === 'POST':
             $data = json_decode(file_get_contents('php://input'), true);
@@ -42,29 +65,6 @@ function route()
         case $uri === '/api/tasks/archive' && $method === 'GET':
             $data = json_decode(file_get_contents('php://input'), true);
             $taskController->archiveTasks();
-            break;
-
-        // --- Projects ---
-        case $uri === '/api/projects' && $method === 'GET':
-            $projectController->get();
-            break;
-
-        case $uri === '/api/projects/create' && $method === 'POST':
-            $data = json_decode(file_get_contents('php://input'), true);
-            $projectController->create($data);
-            break;
-
-        case $uri === '/api/projects/update' && $method === 'POST':
-            $data = json_decode(file_get_contents('php://input'), true);
-            $projectController->update($data);
-            break;
-
-        case $uri === '/api/projects/date-range' && $method === 'GET':
-            $projectController->dateRange();
-            break;
-
-        case preg_match('#^/api/projects/(\d+)/dates$#', $uri, $matches) && $method === 'GET':
-            $projectController->segmentDates((int) $matches[1]);
             break;
 
         // --- Default ---

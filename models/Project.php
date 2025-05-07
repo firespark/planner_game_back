@@ -13,8 +13,8 @@ class Project
 
     public function get()
     {
-        $stmt = $this->conn->query("SELECT * FROM {$this->table} LIMIT 1");
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $stmt = $this->conn->query("SELECT * FROM {$this->table}");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function create($data)
