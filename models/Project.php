@@ -14,7 +14,14 @@ class Project
     public function get()
     {
         $stmt = $this->conn->query("SELECT * FROM {$this->table}");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($projects as &$project) {
+            $project['end_date'] = $this->calculateEndDate($project);
+            $project['max_points'] = $this->calculateMaxPoints($project['id']);
+        }
+
+        return $projects;
     }
 
     public function create($data)
@@ -122,6 +129,22 @@ class Project
         }
 
         return $dates;
+    }
+
+    private function calculateEndDate($project)
+    {
+        $start = new DateTime($project['start_date']);
+        $days = ($project['segment_length'] * $project['total_segments']) - 1;
+        $start->modify("+{$days} days");
+        return $start->format('Y-m-d');
+    }
+
+    private function calculateMaxPoints($projectId)
+    {
+        $stmt = $this->conn->prepare("SELECT SUM(start_points) as total FROM tasks WHERE project_id = :id");
+        $stmt->execute([':id' => $projectId]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (int) ($result['total'] ?? 0);
     }
 
 }
