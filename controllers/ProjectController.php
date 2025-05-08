@@ -1,19 +1,22 @@
 <?php
 require_once __DIR__ . '/../models/Project.php';
+require_once __DIR__ . '/../models/Task.php';
 require_once __DIR__ . '/../core/Response.php';
 
 class ProjectController
 {
-    private $model;
+    private $projectModel;
+    private $taskModel;
 
     public function __construct($db)
     {
-        $this->model = new Project($db);
+        $this->projectModel = new Project($db);
+        $this->taskModel = new Task($db);
     }
 
     public function get()
     {
-        Response::json($this->model->get());
+        Response::json($this->projectModel->get());
     }
 
     public function create($data)
@@ -47,7 +50,7 @@ class ProjectController
             return;
         }
 
-        $result = $this->model->create($data);
+        $result = $this->projectModel->create($data);
 
         if ($result) {
             Response::json([
@@ -65,19 +68,80 @@ class ProjectController
 
     public function update($data)
     {
-        $this->model->update($data);
+        $this->projectModel->update($data);
         Response::json(['success' => true]);
     }
 
     public function dateRange()
     {
-        Response::json($this->model->getVisibleDateRange());
+        Response::json($this->projectModel->getVisibleDateRange());
     }
 
     public function segmentDates($projectId)
     {
-        Response::json($this->model->getSegmentDates($projectId));
+        $dates = $this->projectModel->getSegmentDates($projectId);
+
+        if (empty($dates)) {
+            Response::json(['success' => false, 'error' => 'No dates found for this project'], 404);
+            return;
+        }
+
+        $project = $this->projectModel->getById($projectId);
+        $segmentLength = (int) $project['segment_length'];
+
+        $tasks = $this->taskModel->getForRange($dates[0], end($dates));
+
+        // группировка задач по дате
+        $tasksByDate = [];
+        foreach ($tasks as $task) {
+            $date = $task['date'];
+            if (!isset($tasksByDate[$date])) {
+                $tasksByDate[$date] = [];
+            }
+            $tasksByDate[$date][] = [
+                'id' => $task['id'],
+                'title' => $task['title'],
+                'completed' => (bool) $task['done'],
+                'points' => $task['start_points']
+            ];
+        }
+
+        $segments = [];
+        $currentDate = (new DateTime())->format('Y-m-d');
+
+        $i = 0;
+        while ($i < count($dates)) {
+            $segmentDates = array_slice($dates, $i, $segmentLength);
+            if (empty($segmentDates))
+                break;
+
+            $segmentType = 'future';
+            if ($segmentDates[count($segmentDates) - 1] < $currentDate) {
+                $segmentType = 'past';
+            } elseif ($segmentDates[0] <= $currentDate && $segmentDates[count($segmentDates) - 1] >= $currentDate) {
+                $segmentType = 'current';
+            }
+
+            $segment = [
+                'id' => count($segments) + 1,
+                'type' => $segmentType,
+                'slots' => []
+            ];
+
+            foreach ($segmentDates as $date) {
+                $segment['slots'][] = [
+                    'date' => $date,
+                    'tasks' => $tasksByDate[$date] ?? []
+                ];
+            }
+
+            $segments[] = $segment;
+            $i += $segmentLength;
+        }
+
+        Response::json($segments);
     }
+
 
     public function segmentDetails($segmentNumber)
     {
@@ -89,7 +153,7 @@ class ProjectController
             return;
         }
 
-        $dates = $this->model->getDatesInSegment((int) $segmentNumber);
+        $dates = $this->projectModel->getDatesInSegment((int) $segmentNumber);
 
         if (empty($dates)) {
             Response::json([
@@ -105,4 +169,5 @@ class ProjectController
             'dates' => $dates
         ]);
     }
+
 }

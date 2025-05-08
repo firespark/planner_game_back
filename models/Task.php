@@ -14,7 +14,7 @@ class Task
 
     public function create($data)
     {
-        $stmt = $this->conn->prepare("INSERT INTO {$this->table} (date, title, start_points, current_points, done, archived, created_at) VALUES (:date, :title, :start_points, :start_points, 0, 0, NOW())");
+        $stmt = $this->conn->prepare("INSERT INTO {$this->table} (date, title, start_points, current_points, done, created_at) VALUES (:date, :title, :start_points, :start_points, 0, 0, NOW())");
 
         $stmt->execute([
             ':date' => $data['date'],
@@ -30,11 +30,12 @@ class Task
     }
 
     public function getForRange($start, $end)
-    {
-        $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE date BETWEEN :start AND :end AND archived = 0");
-        $stmt->execute([':start' => $start, ':end' => $end]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+{
+    $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE date BETWEEN :start AND :end");
+    $stmt->execute([':start' => $start, ':end' => $end]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 
     public function markDone($id)
     {
@@ -50,14 +51,11 @@ class Task
 
     public function decayUnfinishedTasks($date)
     {
-        $stmt = $this->conn->prepare("UPDATE {$this->table} SET date = :today, current_points = ROUND(start_points * 0.9, 2) WHERE date < :today AND done = 0 AND archived = 0");
+        $stmt = $this->conn->prepare("UPDATE {$this->table} SET date = :today, current_points = ROUND(start_points * 0.9, 2) WHERE date < :today AND done = 0");
         $stmt->execute([':today' => $date]);
     }
 
-    public function archiveTasks()
-    {
-        $stmt = $this->conn->prepare("UPDATE {$this->table} SET archived = 1 WHERE date < :today AND archived = 0");
-        $stmt->execute();
-    }
+
+
 }
 

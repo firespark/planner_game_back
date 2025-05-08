@@ -50,9 +50,4 @@ class TaskController
         Response::json(['success' => true]);
     }
 
-    public function archiveTasks()
-    {
-        $this->model->archiveTasks();
-        Response::json(['success' => true]);
-    }
 }

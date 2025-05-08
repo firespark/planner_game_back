@@ -94,22 +94,17 @@ class Project
         }
 
         $startDate = new DateTime($project['start_date']);
-        $endDate = clone $startDate;
-        $endDate->modify('+' . ($project['segment_length'] * $project['total_segments'] - 1) . ' days');
-
-        $today = new DateTime();
-        $visibleStart = $today > $startDate ? $today : $startDate;
+        $totalDays = $project['segment_length'] * $project['total_segments'];
 
         $dates = [];
-        $current = clone $visibleStart;
-
-        while ($current <= $endDate) {
-            $dates[] = $current->format('Y-m-d');
-            $current->modify('+' . $project['segment_length'] . ' days');
+        for ($i = 0; $i < $totalDays; $i++) {
+            $dates[] = $startDate->format('Y-m-d');
+            $startDate->modify('+1 day');
         }
 
         return $dates;
     }
+
 
     public function getDatesInSegment($segmentNumber)
     {
@@ -146,5 +141,13 @@ class Project
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return (int) ($result['total'] ?? 0);
     }
+
+    public function getById($id)
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE id = :id");
+        $stmt->execute([':id' => $id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
 
 }
