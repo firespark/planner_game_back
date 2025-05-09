@@ -126,7 +126,7 @@ class Project
         return $dates;
     }
 
-    private function calculateEndDate($project)
+    public function calculateEndDate($project)
     {
         $start = new DateTime($project['start_date']);
         $days = ($project['segment_length'] * $project['total_segments']) - 1;
@@ -134,7 +134,7 @@ class Project
         return $start->format('Y-m-d');
     }
 
-    private function calculateMaxPoints($projectId)
+    public function calculateMaxPoints($projectId)
     {
         $stmt = $this->conn->prepare("SELECT SUM(start_points) as total FROM tasks WHERE project_id = :id");
         $stmt->execute([':id' => $projectId]);

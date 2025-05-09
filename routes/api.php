@@ -62,11 +62,6 @@ function route()
             $taskController->decayUnfinished();
             break;
 
-        case $uri === '/api/tasks/archive' && $method === 'GET':
-            $data = json_decode(file_get_contents('php://input'), true);
-            $taskController->archiveTasks();
-            break;
-
         // --- Default ---
         default:
             http_response_code(404);

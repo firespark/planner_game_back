@@ -91,7 +91,6 @@ class ProjectController
 
         $tasks = $this->taskModel->getForRange($dates[0], end($dates));
 
-        // группировка задач по дате
         $tasksByDate = [];
         foreach ($tasks as $task) {
             $date = $task['date'];
@@ -139,7 +138,21 @@ class ProjectController
             $i += $segmentLength;
         }
 
-        Response::json($segments);
+        Response::json([
+            'project' => [
+                'id' => $project['id'],
+                'title' => $project['title'],
+                'start_date' => $project['start_date'],
+                'segment_length' => (int) $project['segment_length'],
+                'total_segments' => (int) $project['total_segments'],
+                'minimum_percentage' => (float) $project['minimum_percentage'],
+                'total_points' => (int) $project['total_points'],
+                'end_date' => $this->projectModel->calculateEndDate($project),
+                'max_points' => $this->projectModel->calculateMaxPoints($project['id']),
+            ],
+            'segments' => $segments
+        ]);
+
     }
 
 
