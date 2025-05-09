@@ -13,13 +13,69 @@ class TaskController
 
     public function create($data)
     {
-        if (!isset($data['date'], $data['title'], $data['points'])) {
-            Response::json(['error' => 'Missing fields'], 400);
+        $errors = [];
+
+        $required = ['date', 'title', 'points'];
+        foreach ($required as $field) {
+            if (!isset($data[$field]) || $data[$field] === '' || $data[$field] === null) {
+                $errors[] = "Field '$field' is required.";
+            }
+        }
+
+        if (isset($data['date']) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['date'])) {
+            $errors[] = "Invalid date format (expected YYYY-MM-DD).";
+        }
+
+        if (isset($data['points']) && (!is_numeric($data['points']) || $data['points'] < 1 || $data['points'] > 100000)) {
+            $errors[] = "Points must be a number from 1 to 100000.";
+        }
+
+        if (!empty($errors)) {
+            Response::json([
+                'success' => false,
+                'error' => join(", ", $errors)
+            ], 400);
+            return;
         }
 
         $id = $this->model->create($data);
-        Response::json(['success' => true, 'id' => $id]);
+
+        if ($id) {
+            Response::json(['success' => true, 'id' => $id]);
+        } else {
+            Response::json(['success' => false, 'error' => 'Failed to create the task'], 500);
+        }
     }
+
+    public function update($id, $data)
+    {
+        $errors = [];
+
+        if (!$id || !is_numeric($id)) {
+            $errors[] = "Valid 'id' is required.";
+        }
+
+        if (!isset($data['title']) || $data['title'] === '' || $data['title'] === null) {
+            $errors[] = "Field 'title' is required.";
+        }
+
+        if (!empty($errors)) {
+            Response::json([
+                'success' => false,
+                'error' => join(", ", $errors)
+            ], 400);
+            return;
+        }
+
+        $result = $this->model->update($id, $data['title']);
+
+        if ($result) {
+            Response::json(['success' => true]);
+        } else {
+            Response::json(['success' => false, 'error' => 'Failed to update the task'], 500);
+        }
+    }
+
 
     public function getForRange($data)
     {

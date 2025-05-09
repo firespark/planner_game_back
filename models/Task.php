@@ -16,26 +16,41 @@ class Task
     {
         $stmt = $this->conn->prepare("INSERT INTO {$this->table} (project_id, date, title, start_points, current_points, done, created_at) VALUES (:project_id, :date, :title, :start_points, :start_points, 0, NOW())");
 
-        $stmt->execute([
+        $success = $stmt->execute([
             ':project_id' => $data['project_id'],
             ':date' => $data['date'],
             ':title' => $data['title'],
             ':start_points' => $data['points']
         ]);
 
+        if (!$success)
+            return;
+
+        $id = $this->conn->lastInsertId();
 
         $project = new Project($this->conn);
         $project->addPoints($data['points']);
 
-        return $this->conn->lastInsertId();
+        return $id;
     }
 
+    public function update($id, $title)
+    {
+        $stmt = $this->conn->prepare("UPDATE {$this->table} SET title = :title WHERE id = :id");
+
+        return $stmt->execute([
+            ':title' => $title,
+            ':id' => $id
+        ]);
+    }
+
+
     public function getForRange($start, $end)
-{
-    $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE date BETWEEN :start AND :end");
-    $stmt->execute([':start' => $start, ':end' => $end]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+    {
+        $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE date BETWEEN :start AND :end");
+        $stmt->execute([':start' => $start, ':end' => $end]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
 
     public function markDone($id)

@@ -48,6 +48,13 @@ function route()
             $taskController->create($data);
             break;
 
+        case preg_match('#^/api/tasks/update/(\d+)$#', $uri, $matches) && $method === 'PUT':
+            $id = (int) $matches[1];
+            $data = json_decode(file_get_contents('php://input'), true);
+            $taskController->update($id, $data);
+            break;
+
+
         case $uri === '/api/tasks/done' && $method === 'POST':
             $data = json_decode(file_get_contents('php://input'), true);
             $taskController->markDone($data['id']);
