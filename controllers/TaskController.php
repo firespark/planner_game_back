@@ -108,4 +108,20 @@ class TaskController
         Response::json(['success' => true]);
     }
 
+    public function delete($id)
+    {
+        if (!$id || !is_numeric($id)) {
+            Response::json(['success' => false, 'error' => 'Valid task ID is required.'], 400);
+            return;
+        }
+
+        $result = $this->model->delete($id);
+
+        if ($result) {
+            Response::json(['success' => true]);
+        } else {
+            Response::json(['success' => false, 'error' => 'Failed to delete the task'], 500);
+        }
+    }
+
 }

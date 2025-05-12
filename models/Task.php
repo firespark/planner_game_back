@@ -75,7 +75,32 @@ class Task
         $stmt->execute([':today' => $date]);
     }
 
+    public function delete($id)
+    {
 
+        $stmt = $this->conn->prepare("SELECT current_points, project_id FROM {$this->table} WHERE id = :id");
+        $stmt->execute([':id' => $id]);
+        $task = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$task) {
+            return false;
+        }
+
+        $points = $task['current_points'];
+        $projectId = $task['project_id'];
+
+        $stmt = $this->conn->prepare("DELETE FROM {$this->table} WHERE id = :id");
+        $success = $stmt->execute([':id' => $id]);
+
+        if (!$success) {
+            return false;
+        }
+
+        $project = new Project($this->conn);
+        $project->addPoints(-$points);
+
+        return true;
+    }
 
 }
 

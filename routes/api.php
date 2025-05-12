@@ -65,6 +65,11 @@ function route()
             $taskController->markUndone($data['id']);
             break;
 
+        case preg_match('#^/api/tasks/delete/(\d+)$#', $uri, $matches) && $method === 'DELETE':
+            $id = (int) $matches[1];
+            $taskController->delete($id);
+            break;
+
         case $uri === '/api/tasks/decay' && $method === 'GET':
             $taskController->decayUnfinished();
             break;
