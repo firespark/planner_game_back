@@ -55,9 +55,11 @@ class TaskController
             $errors[] = "Valid 'id' is required.";
         }
 
-        if (!isset($data['title']) || $data['title'] === '' || $data['title'] === null) {
+        if (!isset($data['title']) || trim($data['title']) === '') {
             $errors[] = "Field 'title' is required.";
         }
+
+        $completed = isset($data['completed']) ? (bool) $data['completed'] : false;
 
         if (!empty($errors)) {
             Response::json([
@@ -67,7 +69,7 @@ class TaskController
             return;
         }
 
-        $result = $this->model->update($id, $data['title']);
+        $result = $this->model->update($id, $data['title'], $completed);
 
         if ($result) {
             Response::json(['success' => true]);

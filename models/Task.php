@@ -34,16 +34,20 @@ class Task
         return $id;
     }
 
-    public function update($id, $title)
+    public function update($id, $title, $completed)
     {
-        $stmt = $this->conn->prepare("UPDATE {$this->table} SET title = :title WHERE id = :id");
+        $stmt = $this->conn->prepare("
+        UPDATE {$this->table}
+        SET title = :title, done = :completed
+        WHERE id = :id
+    ");
 
         return $stmt->execute([
             ':title' => $title,
+            ':completed' => $completed ? 1 : 0,
             ':id' => $id
         ]);
     }
-
 
     public function getForRange($start, $end)
     {
