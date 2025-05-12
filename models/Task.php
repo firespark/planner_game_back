@@ -69,11 +69,38 @@ class Task
         $stmt->execute([':id' => $id]);
     }
 
-    public function decayUnfinishedTasks($date)
+    public function decayUnfinishedTasks($today)
     {
-        $stmt = $this->conn->prepare("UPDATE {$this->table} SET date = :today, current_points = ROUND(start_points * 0.9, 2) WHERE date < :today AND done = 0");
-        $stmt->execute([':today' => $date]);
+        $stmt = $this->conn->prepare("
+        SELECT id, start_points, date
+        FROM {$this->table}
+        WHERE date < :today AND done = 0
+    ");
+        $stmt->execute([':today' => $today]);
+        $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($tasks as $task) {
+            $taskDate = new DateTime($task['date']);
+            $currentDate = new DateTime($today);
+            $daysLate = $taskDate->diff($currentDate)->days;
+
+            $newPoints = round($task['start_points'] * pow(0.9, $daysLate), 2);
+
+            $updateStmt = $this->conn->prepare("
+            UPDATE {$this->table}
+            SET
+                current_points = :points,
+                date = :today
+            WHERE id = :id
+        ");
+            $updateStmt->execute([
+                ':points' => $newPoints,
+                ':today' => $today,
+                ':id' => $task['id']
+            ]);
+        }
     }
+
 
     public function delete($id)
     {

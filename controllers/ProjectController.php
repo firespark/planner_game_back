@@ -79,6 +79,9 @@ class ProjectController
 
     public function segmentDates($projectId)
     {
+        $today = (new DateTime())->format('Y-m-d');
+        $this->taskModel->decayUnfinishedTasks($today);
+
         $dates = $this->projectModel->getSegmentDates($projectId);
 
         if (empty($dates)) {
