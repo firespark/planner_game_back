@@ -19,14 +19,24 @@ function route()
             $projectController->get();
             break;
 
+        case preg_match('#^/api/projects/(\d+)$#', $uri, $matches) && $method === 'GET':
+            $projectController->getById((int) $matches[1]);
+            break;
+
         case $uri === '/api/projects/create' && $method === 'POST':
             $data = json_decode(file_get_contents('php://input'), true);
             $projectController->create($data);
             break;
 
-        case $uri === '/api/projects/update' && $method === 'POST':
+        case preg_match('#^/api/projects/update/(\d+)$#', $uri, $matches) && $method === 'POST':
+            $id = (int) $matches[1];
             $data = json_decode(file_get_contents('php://input'), true);
-            $projectController->update($data);
+            $projectController->update($id, $data);
+            break;
+
+        case preg_match('#^/api/projects/delete/(\d+)$#', $uri, $matches) && $method === 'DELETE':
+            $id = (int) $matches[1];
+            $projectController->delete($id);
             break;
 
         case $uri === '/api/projects/date-range' && $method === 'GET':

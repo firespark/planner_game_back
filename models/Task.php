@@ -49,12 +49,19 @@ class Task
         ]);
     }
 
-    public function getForRange($start, $end)
+    public function getForRange($start, $end, $projectId)
     {
-        $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE date BETWEEN :start AND :end");
-        $stmt->execute([':start' => $start, ':end' => $end]);
+        $stmt = $this->conn->prepare(
+            "SELECT * FROM {$this->table} WHERE date BETWEEN :start AND :end AND project_id = :project_id"
+        );
+        $stmt->execute([
+            ':start' => $start,
+            ':end' => $end,
+            ':project_id' => $projectId
+        ]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
 
 
     public function markDone($id)

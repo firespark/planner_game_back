@@ -19,6 +19,18 @@ class ProjectController
         Response::json($this->projectModel->get());
     }
 
+    public function getById($id)
+    {
+        $project = $this->projectModel->getById($id);
+
+        if ($project) {
+            Response::json(['success' => true, 'project' => $project]);
+        } else {
+            Response::json(['success' => false, 'error' => 'Project not found.'], 404);
+        }
+    }
+
+
     public function create($data)
     {
         $errors = [];
@@ -66,11 +78,36 @@ class ProjectController
     }
 
 
-    public function update($data)
+    public function update($id, $data)
     {
-        $this->projectModel->update($data);
-        Response::json(['success' => true]);
+        $project = $this->projectModel->getById($id);
+
+        if (!$project) {
+            Response::json(['success' => false, 'error' => 'Project not found.'], 404);
+            return;
+        }
+
+        $errors = [];
+        $required = ['title'];
+        foreach ($required as $field) {
+            if (!isset($data[$field]) || $data[$field] === '' || $data[$field] === null) {
+                $errors[] = "Field '$field' is required.";
+            }
+        }
+        if (!empty($errors)) {
+            Response::json(['success' => false, 'error' => join(", ", $errors)], 400);
+            return;
+        }
+
+        $result = $this->projectModel->update($id, $data);
+
+        if ($result) {
+            Response::json(['success' => true]);
+        } else {
+            Response::json(['success' => false, 'error' => 'Failed to update project settings.'], 500);
+        }
     }
+
 
     public function dateRange()
     {
@@ -92,7 +129,8 @@ class ProjectController
         $project = $this->projectModel->getById($projectId);
         $segmentLength = (int) $project['segment_length'];
 
-        $tasks = $this->taskModel->getForRange($dates[0], end($dates));
+        $tasks = $this->taskModel->getForRange($dates[0], end($dates), $projectId);
+
 
         $tasksByDate = [];
         foreach ($tasks as $task) {
@@ -207,5 +245,17 @@ class ProjectController
         }
         return $total;
     }
+
+    public function delete($id)
+    {
+        $result = $this->projectModel->delete($id);
+
+        if ($result) {
+            Response::json(['success' => true]);
+        } else {
+            Response::json(['success' => false, 'error' => 'Failed to delete the project.'], 500);
+        }
+    }
+
 
 }

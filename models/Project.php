@@ -46,26 +46,20 @@ class Project
         return $success ? $this->conn->lastInsertId() : false;
     }
 
-    public function update($data)
+    public function update($id, $data)
     {
         $stmt = $this->conn->prepare("
-            UPDATE {$this->table} SET
-                title = :title,
-                start_date = :start_date,
-                segment_length = :segment_length,
-                total_segments = :total_segments,
-                minimum_percentage = :minimum_percentage
-            WHERE id = 1
-        ");
-
+        UPDATE {$this->table}
+        SET
+            title = :title
+        WHERE id = :id
+    ");
         return $stmt->execute([
-            ':title' => $data['title'],
-            ':start_date' => $data['start_date'],
-            ':segment_length' => $data['segment_length'],
-            ':total_segments' => $data['total_segments'],
-            ':minimum_percentage' => $data['minimum_percentage']
+            ':id' => $id,
+            ':title' => $data['title']
         ]);
     }
+
 
     public function addPoints($points)
     {
@@ -161,6 +155,15 @@ class Project
         $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE id = :id");
         $stmt->execute([':id' => $id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    public function delete($id)
+    {
+        $stmtTasks = $this->conn->prepare("DELETE FROM tasks WHERE project_id = :id");
+        $stmtTasks->execute([':id' => $id]);
+
+        $stmtProject = $this->conn->prepare("DELETE FROM {$this->table} WHERE id = :id");
+        return $stmtProject->execute([':id' => $id]);
     }
 
 
