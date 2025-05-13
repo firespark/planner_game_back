@@ -79,12 +79,14 @@ class Task
         $stmt->execute([':today' => $today]);
         $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        $currentDate = new DateTime($today);
+
         foreach ($tasks as $task) {
             $taskDate = new DateTime($task['date']);
-            $currentDate = new DateTime($today);
+
             $daysLate = $taskDate->diff($currentDate)->days;
 
-            $newPoints = round($task['start_points'] * pow(0.9, $daysLate), 2);
+            $newPoints = max(0, $task['start_points'] * (1 - 0.1 * $daysLate));
 
             $updateStmt = $this->conn->prepare("
             UPDATE {$this->table}

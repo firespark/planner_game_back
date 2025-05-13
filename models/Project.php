@@ -19,10 +19,12 @@ class Project
         foreach ($projects as &$project) {
             $project['end_date'] = $this->calculateEndDate($project);
             $project['max_points'] = $this->calculateMaxPoints($project['id']);
+            $project['total_points'] = $this->calculateTotalPoints($project['id']);
         }
 
         return $projects;
     }
+
 
     public function create($data)
     {
@@ -137,6 +139,18 @@ class Project
     public function calculateMaxPoints($projectId)
     {
         $stmt = $this->conn->prepare("SELECT SUM(start_points) as total FROM tasks WHERE project_id = :id");
+        $stmt->execute([':id' => $projectId]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (int) ($result['total'] ?? 0);
+    }
+
+    public function calculateTotalPoints($projectId)
+    {
+        $stmt = $this->conn->prepare("
+        SELECT SUM(current_points) as total
+        FROM tasks
+        WHERE project_id = :id AND done = 1
+    ");
         $stmt->execute([':id' => $projectId]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return (int) ($result['total'] ?? 0);

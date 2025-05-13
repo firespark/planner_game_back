@@ -104,7 +104,8 @@ class ProjectController
                 'id' => $task['id'],
                 'title' => $task['title'],
                 'completed' => (bool) $task['done'],
-                'points' => $task['start_points']
+                'start_points' => $task['start_points'],
+                'points' => $task['current_points']
             ];
         }
 
@@ -148,10 +149,11 @@ class ProjectController
                 'start_date' => $project['start_date'],
                 'segment_length' => (int) $project['segment_length'],
                 'total_segments' => (int) $project['total_segments'],
-                'minimum_percentage' => (float) $project['minimum_percentage'],
-                'total_points' => (int) $project['total_points'],
+                'minimum_percentage' => (int) $project['minimum_percentage'],
+                'decrease_percentage' => (int) $project['decrease_percentage'],
                 'end_date' => $this->projectModel->calculateEndDate($project),
-                'max_points' => $this->projectModel->calculateMaxPoints($project['id']),
+                'total_points' => $this->calculateTotalPoints($tasks),
+                'max_points' => $this->calculateMaxPoints($tasks),
             ],
             'segments' => $segments
         ]);
@@ -184,6 +186,26 @@ class ProjectController
             'segment' => $segmentNumber,
             'dates' => $dates
         ]);
+    }
+
+    private function calculateTotalPoints(array $tasks)
+    {
+        $total = 0;
+        foreach ($tasks as $task) {
+            if ($task['done']) {
+                $total += (int) $task['current_points'];
+            }
+        }
+        return $total;
+    }
+
+    private function calculateMaxPoints(array $tasks)
+    {
+        $total = 0;
+        foreach ($tasks as $task) {
+            $total += (int) $task['start_points'];
+        }
+        return $total;
     }
 
 }
