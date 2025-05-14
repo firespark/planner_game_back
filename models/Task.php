@@ -28,9 +28,6 @@ class Task
 
         $id = $this->conn->lastInsertId();
 
-        $project = new Project($this->conn);
-        $project->addPoints($data['points']);
-
         return $id;
     }
 
@@ -131,9 +128,6 @@ class Task
         if (!$success) {
             return false;
         }
-
-        $project = new Project($this->conn);
-        $project->addPoints(-$points);
 
         return true;
     }

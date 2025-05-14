@@ -18,6 +18,7 @@ class Project
 
         foreach ($projects as &$project) {
             $project['end_date'] = $this->calculateEndDate($project);
+            $project['finished'] = $this->projectFinish($project['id'], $project['finished'], $project['end_date']);
             $project['max_points'] = $this->calculateMaxPoints($project['id']);
             $project['total_points'] = $this->calculateTotalPoints($project['id']);
         }
@@ -26,13 +27,14 @@ class Project
     }
 
 
+
     public function create($data)
     {
         $stmt = $this->conn->prepare("
         INSERT INTO {$this->table}
-            (title, start_date, segment_length, total_segments, minimum_percentage, total_points)
+            (title, start_date, segment_length, total_segments, minimum_percentage)
         VALUES
-            (:title, :start_date, :segment_length, :total_segments, :minimum_percentage, 0)
+            (:title, :start_date, :segment_length, :total_segments, :minimum_percentage)
     ");
 
         $success = $stmt->execute([
@@ -60,12 +62,6 @@ class Project
         ]);
     }
 
-
-    public function addPoints($points)
-    {
-        $stmt = $this->conn->prepare("UPDATE {$this->table} SET total_points = total_points + :points WHERE id = 1");
-        $stmt->execute([':points' => $points]);
-    }
 
     public function getVisibleDateRange()
     {
@@ -154,7 +150,18 @@ class Project
     {
         $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE id = :id");
         $stmt->execute([':id' => $id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $project = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$project) {
+            return null;
+        }
+
+        $project['end_date'] = $this->calculateEndDate($project);
+        $project['finished'] = $this->projectFinish($project['id'], $project['finished'], $project['end_date']);
+        $project['max_points'] = $this->calculateMaxPoints($project['id']);
+        $project['total_points'] = $this->calculateTotalPoints($project['id']);
+
+        return $project;
     }
 
     public function delete($id)
@@ -165,6 +172,28 @@ class Project
         $stmtProject = $this->conn->prepare("DELETE FROM {$this->table} WHERE id = :id");
         return $stmtProject->execute([':id' => $id]);
     }
+
+    public function projectFinish($projectId, $finished, $endDate)
+    {
+        $today = new DateTime();
+        $end = new DateTime($endDate);
+
+        if ((int) $finished === 0 && $end < $today) {
+            $this->markAsFinished($projectId);
+            return 1;
+        }
+
+        return (int) $finished;
+    }
+
+
+
+    public function markAsFinished($projectId)
+    {
+        $stmt = $this->conn->prepare("UPDATE {$this->table} SET finished = 1 WHERE id = :id");
+        $stmt->execute([':id' => $projectId]);
+    }
+
 
 
 }

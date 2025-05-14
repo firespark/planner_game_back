@@ -31,6 +31,7 @@ class ProjectController
     }
 
 
+
     public function create($data)
     {
         $errors = [];
@@ -128,10 +129,9 @@ class ProjectController
 
         $project = $this->projectModel->getById($projectId);
         $segmentLength = (int) $project['segment_length'];
-
         $tasks = $this->taskModel->getForRange($dates[0], end($dates), $projectId);
 
-
+        // Группировка задач по дате
         $tasksByDate = [];
         foreach ($tasks as $task) {
             $date = $task['date'];
@@ -147,9 +147,9 @@ class ProjectController
             ];
         }
 
+        // Построение сегментов
         $segments = [];
         $currentDate = (new DateTime())->format('Y-m-d');
-
         $i = 0;
         while ($i < count($dates)) {
             $segmentDates = array_slice($dates, $i, $segmentLength);
@@ -181,23 +181,10 @@ class ProjectController
         }
 
         Response::json([
-            'project' => [
-                'id' => $project['id'],
-                'title' => $project['title'],
-                'start_date' => $project['start_date'],
-                'segment_length' => (int) $project['segment_length'],
-                'total_segments' => (int) $project['total_segments'],
-                'minimum_percentage' => (int) $project['minimum_percentage'],
-                'decrease_percentage' => (int) $project['decrease_percentage'],
-                'end_date' => $this->projectModel->calculateEndDate($project),
-                'total_points' => $this->calculateTotalPoints($tasks),
-                'max_points' => $this->calculateMaxPoints($tasks),
-            ],
-            'segments' => $segments
+            'project' => $project,
+            'segments' => $segments,
         ]);
-
     }
-
 
     public function segmentDetails($segmentNumber)
     {
