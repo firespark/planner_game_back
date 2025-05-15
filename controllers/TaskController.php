@@ -78,17 +78,6 @@ class TaskController
         }
     }
 
-
-    public function getForRange($data)
-    {
-        if (!isset($data['start'], $data['end'])) {
-            Response::json(['error' => 'Missing date range'], 400);
-        }
-
-        $tasks = $this->model->getForRange($data['start'], $data['end']);
-        Response::json($tasks);
-    }
-
     public function markDone($id)
     {
         $this->model->markDone($id);

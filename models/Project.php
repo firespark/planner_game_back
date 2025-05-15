@@ -62,20 +62,6 @@ class Project
         ]);
     }
 
-
-    public function getVisibleDateRange()
-    {
-        $project = $this->get();
-        $today = new DateTime();
-        $start = $today;
-        $end = (new DateTime($project['start_date']))->modify('+' . ($project['segment_length'] * $project['total_segments'] - 1) . ' days');
-
-        return [
-            'start' => max($start, new DateTime($project['start_date']))->format('Y-m-d'),
-            'end' => $end->format('Y-m-d')
-        ];
-    }
-
     public function getSegmentDates($projectId)
     {
         $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE id = :id");

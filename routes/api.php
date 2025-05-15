@@ -39,19 +39,11 @@ function route()
             $projectController->delete($id);
             break;
 
-        case $uri === '/api/projects/date-range' && $method === 'GET':
-            $projectController->dateRange();
-            break;
-
         case preg_match('#^/api/projects/(\d+)/dates$#', $uri, $matches) && $method === 'GET':
             $projectController->segmentDates((int) $matches[1]);
             break;
 
         // --- Tasks ---
-        case $uri === '/api/tasks/range' && $method === 'POST':
-            $data = json_decode(file_get_contents('php://input'), true);
-            $taskController->getForRange($data);
-            break;
 
         case $uri === '/api/tasks/create' && $method === 'POST':
             $data = json_decode(file_get_contents('php://input'), true);
@@ -70,18 +62,9 @@ function route()
             $taskController->markDone($data['id']);
             break;
 
-        case $uri === '/api/tasks/undone' && $method === 'POST':
-            $data = json_decode(file_get_contents('php://input'), true);
-            $taskController->markUndone($data['id']);
-            break;
-
         case preg_match('#^/api/tasks/delete/(\d+)$#', $uri, $matches) && $method === 'DELETE':
             $id = (int) $matches[1];
             $taskController->delete($id);
-            break;
-
-        case $uri === '/api/tasks/decay' && $method === 'GET':
-            $taskController->decayUnfinished();
             break;
 
         // --- Default ---

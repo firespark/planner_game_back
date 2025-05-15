@@ -109,12 +109,6 @@ class ProjectController
         }
     }
 
-
-    public function dateRange()
-    {
-        Response::json($this->projectModel->getVisibleDateRange());
-    }
-
     public function segmentDates($projectId)
     {
         $today = (new DateTime())->format('Y-m-d');
@@ -131,7 +125,6 @@ class ProjectController
         $segmentLength = (int) $project['segment_length'];
         $tasks = $this->taskModel->getForRange($dates[0], end($dates), $projectId);
 
-        // Группировка задач по дате
         $tasksByDate = [];
         foreach ($tasks as $task) {
             $date = $task['date'];
@@ -147,7 +140,6 @@ class ProjectController
             ];
         }
 
-        // Построение сегментов
         $segments = [];
         $currentDate = (new DateTime())->format('Y-m-d');
         $i = 0;
