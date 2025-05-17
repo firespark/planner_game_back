@@ -23,6 +23,10 @@ class Project
             $project['total_points'] = $this->calculateTotalPoints($project['id']);
         }
 
+        usort($projects, function ($a, $b) {
+            return strcmp($b['end_date'], $a['end_date']);
+        });
+
         return $projects;
     }
 
