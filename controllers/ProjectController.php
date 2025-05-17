@@ -26,7 +26,7 @@ class ProjectController
         if ($project) {
             Response::json(['success' => true, 'project' => $project]);
         } else {
-            Response::json(['success' => false, 'error' => 'Project not found.'], 404);
+            Response::json(['success' => false, 'error' => 'Project not found'], 404);
         }
     }
 
@@ -36,23 +36,32 @@ class ProjectController
     {
         $errors = [];
 
+        $totalProjects = $this->projectModel->countAll();
+        if ($totalProjects >= 5) {
+            Response::json([
+                'success' => false,
+                'error' => 'Cannot create more than 5 projects'
+            ], 400);
+            return;
+        }
+
         $required = ['title', 'start_date', 'segment_length', 'total_segments', 'minimum_percentage'];
         foreach ($required as $field) {
             if (!isset($data[$field]) || $data[$field] === '' || $data[$field] === null) {
-                $errors[] = "Field '$field' is required.";
+                $errors[] = "Field '$field' is required";
             }
         }
 
         if (isset($data['segment_length']) && (!is_numeric($data['segment_length']) || $data['segment_length'] < 1 || $data['segment_length'] > 14)) {
-            $errors[] = 'Segment length must be from 1 to 14.';
+            $errors[] = 'Segment length must be from 1 to 14';
         }
 
         if (isset($data['total_segments']) && (!is_numeric($data['total_segments']) || $data['total_segments'] < 1 || $data['total_segments'] > 24)) {
-            $errors[] = 'Total segments must be from 1 to 24.';
+            $errors[] = 'Total segments must be from 1 to 24';
         }
 
         if (isset($data['minimum_percentage']) && (!is_numeric($data['minimum_percentage']) || $data['minimum_percentage'] < 1 || $data['minimum_percentage'] > 100)) {
-            $errors[] = 'Minimum percentage must be from 1 to 100.';
+            $errors[] = 'Minimum percentage must be from 1 to 100';
         }
 
         if (!empty($errors)) {
@@ -73,18 +82,17 @@ class ProjectController
         } else {
             Response::json([
                 'success' => false,
-                'error' => 'Failed to create the project.'
+                'error' => 'Failed to create the project'
             ], 500);
         }
     }
-
 
     public function update($id, $data)
     {
         $project = $this->projectModel->getById($id);
 
         if (!$project) {
-            Response::json(['success' => false, 'error' => 'Project not found.'], 404);
+            Response::json(['success' => false, 'error' => 'Project not found'], 404);
             return;
         }
 
@@ -92,7 +100,7 @@ class ProjectController
         $required = ['title'];
         foreach ($required as $field) {
             if (!isset($data[$field]) || $data[$field] === '' || $data[$field] === null) {
-                $errors[] = "Field '$field' is required.";
+                $errors[] = "Field '$field' is required";
             }
         }
         if (!empty($errors)) {
@@ -105,7 +113,7 @@ class ProjectController
         if ($result) {
             Response::json(['success' => true]);
         } else {
-            Response::json(['success' => false, 'error' => 'Failed to update project settings.'], 500);
+            Response::json(['success' => false, 'error' => 'Failed to update project settings'], 500);
         }
     }
 
@@ -232,7 +240,7 @@ class ProjectController
         if ($result) {
             Response::json(['success' => true]);
         } else {
-            Response::json(['success' => false, 'error' => 'Failed to delete the project.'], 500);
+            Response::json(['success' => false, 'error' => 'Failed to delete the project'], 500);
         }
     }
 

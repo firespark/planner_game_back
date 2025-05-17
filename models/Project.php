@@ -180,6 +180,12 @@ class Project
         $stmt->execute([':id' => $projectId]);
     }
 
+    public function countAll()
+    {
+        $stmt = $this->conn->query("SELECT COUNT(*) as count FROM {$this->table}");
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (int) $result['count'];
+    }
 
 
 }

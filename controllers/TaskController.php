@@ -18,16 +18,16 @@ class TaskController
         $required = ['date', 'title', 'points'];
         foreach ($required as $field) {
             if (!isset($data[$field]) || $data[$field] === '' || $data[$field] === null) {
-                $errors[] = "Field '$field' is required.";
+                $errors[] = "Field '$field' is required";
             }
         }
 
         if (isset($data['date']) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['date'])) {
-            $errors[] = "Invalid date format (expected YYYY-MM-DD).";
+            $errors[] = "Invalid date format (expected YYYY-MM-DD)";
         }
 
         if (isset($data['points']) && (!is_numeric($data['points']) || $data['points'] < 1 || $data['points'] > 100000)) {
-            $errors[] = "Points must be a number from 1 to 100000.";
+            $errors[] = "Points must be a number from 1 to 100000";
         }
 
         if (!empty($errors)) {
@@ -52,11 +52,11 @@ class TaskController
         $errors = [];
 
         if (!$id || !is_numeric($id)) {
-            $errors[] = "Valid 'id' is required.";
+            $errors[] = "Valid 'id' is required";
         }
 
         if (!isset($data['title']) || trim($data['title']) === '') {
-            $errors[] = "Field 'title' is required.";
+            $errors[] = "Field 'title' is required";
         }
 
         $completed = isset($data['completed']) ? (bool) $data['completed'] : false;
@@ -100,7 +100,7 @@ class TaskController
     public function delete($id)
     {
         if (!$id || !is_numeric($id)) {
-            Response::json(['success' => false, 'error' => 'Valid task ID is required.'], 400);
+            Response::json(['success' => false, 'error' => 'Valid task ID is required'], 400);
             return;
         }
 
