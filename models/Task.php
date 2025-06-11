@@ -76,10 +76,10 @@ class Task
     public function decayUnfinishedTasks($today)
     {
         $stmt = $this->conn->prepare("
-        SELECT id, start_points, date
-        FROM {$this->table}
-        WHERE date < :today AND done = 0
-    ");
+            SELECT id, start_points, current_points, date
+            FROM {$this->table}
+            WHERE date < :today AND done = 0
+        ");
         $stmt->execute([':today' => $today]);
         $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -90,15 +90,22 @@ class Task
 
             $daysLate = $taskDate->diff($currentDate)->days;
 
-            $newPoints = max(0, $task['start_points'] * (1 - 0.1 * $daysLate));
+            $penaltyPerDay = 0.1 * $task['start_points'];
+            $totalPenalty = $penaltyPerDay * $daysLate;
+            $newPoints = $task['current_points'] - $totalPenalty;
+
+            /*if ($task['id'] == 129) {
+                print_r($task);
+                echo $newPoints;
+            }*/
 
             $updateStmt = $this->conn->prepare("
-            UPDATE {$this->table}
-            SET
-                current_points = :points,
-                date = :today
-            WHERE id = :id
-        ");
+                UPDATE {$this->table}
+                SET
+                    current_points = :points,
+                    date = :today
+                WHERE id = :id
+            ");
             $updateStmt->execute([
                 ':points' => $newPoints,
                 ':today' => $today,
